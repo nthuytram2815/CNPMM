@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>User List</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f8f9fa;
+      text-align: center;
+      margin: 40px;
+    }
+    h2 {
+      color: #333;
+    }
+    table {
+      margin: 20px auto;
+      border-collapse: collapse;
+      width: 80%;
+      background: #fff;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 10px;
+    }
+    th {
+      background: #007bff;
+      color: white;
+    }
+    tr:nth-child(even) {
+      background: #f2f2f2;
+    }
+    a {
+      text-decoration: none;
+      color: #007bff;
+    }
+    a:hover { text-decoration: underline; }
+    .btn {
+      display: inline-block;
+      padding: 5px 10px;
+      border-radius: 4px;
+      color: white;
+      font-size: 0.9em;
+    }
+    .edit { background: #ffc107; }
+    .delete { background: #dc3545; }
+    .add { background: #28a745; margin-bottom: 10px; }
+  </style>
+</head>
+<body>
+  <h2>Danh sách User</h2>
+  <a class="btn add" href="/">+ Thêm User</a>
+
+  <% if (users.length > 0) { %>
+  <table>
+    <thead>
+      <tr>
+        <th>STT</th>
+        <th>Tên</th>
+        <th>Email</th>
+        <th>Tuổi</th>
+        <th>Hành động</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% users.forEach((u, i) => { %>
+        <tr>
+          <td><%= i + 1 %></td>
+          <td><%= u.name %></td>
+          <td><%= u.email %></td>
+          <td><%= u.age %></td>
+          <td>
+            <a class="btn edit" href="/update/<%= u._id %>">Sửa</a>
+            <a class="btn delete" href="/delete/<%= u._id %>" onclick="return confirm('Xoá người dùng này?')">Xoá</a>
+          </td>
+        </tr>
+      <% }) %>
+    </tbody>
+  </table>
+  <% } else { %>
+    <p>Không có người dùng nào trong hệ thống.</p>
+  <% } %>
+</body>
+</html>
