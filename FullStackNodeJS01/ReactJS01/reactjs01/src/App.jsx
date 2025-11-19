@@ -1,33 +1,45 @@
-import { Routes, Route, Navigate } from "react-router-dom";
-import { useContext } from "react";
-import { AuthContext } from "./components/context/AuthContext";
+import { Outlet } from 'react-router-dom';
+import Header from './components/layout/header';
+import axios from './util/axios.customize';
+import { useContext, useEffect } from 'react';
+import { AuthContext } from '.components/context/auth.context';
+import { Spin } from 'antd';
 
-import Home from "./pages/Home";
-import Login from "./pages/Login";
-import Register from "./pages/Register";
-import Dashboard from "./pages/Dashboard";
-import NotFound from "./pages/NotFound";
+function App() {
+  const { setAuth, appLoading, setAppLoading } = useContext(AuthContext);
 
-export default function App() {
-    const { token } = useContext(AuthContext);
+  useEffect(() => {
+    const fetchAccount = async () => {
+      setAppLoading(true);
+      const res = await axios.get('/v1/api/user');
+      if (res && !res.message) {
+        setAuth({
+          isAuthenticated: true,
+          user: {
+            email: res.email,
+            name: res.name
+          }
+        })
+      }
+      setAppLoading(false);
+    }
+    fetchAccount();
+  }, []);
 
-    const PrivateRoute = ({ children }) => {
-        return token ? children : <Navigate to="/login" />;
-    };
-
-    return (
-        <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-
-            <Route path="/dashboard" element={
-                <PrivateRoute>
-                    <Dashboard />
-                </PrivateRoute>
-            } />
-
-            <Route path="*" element={<NotFound />} />
-        </Routes>
-    );
+  return (
+    <div>
+      {appLoading === true ?
+        <div style={{position: "fixed", top: "50%", left: "50%", transform: "translate(-50%, -50%)"}}>
+          <Spin />
+        </div>
+        :
+        <>
+          <Header />
+          <Outlet />
+        </>
+      }
+    </div>
+  );
 }
+
+export default App;

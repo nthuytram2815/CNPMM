@@ -1,9 +1,14 @@
-import MainLayout from "../components/layout/MainLayout";
+import { CrowOutlined } from "@ant-design/icons";
+import { Result } from "antd";
 
-export default function Home() {
+const HomePage = () => {
     return (
-        <MainLayout>
-            <h1>Welcome to Home</h1>
-        </MainLayout>
-    );
+        <div style={{ padding: 20 }}>
+            <Result
+                icon={<CrowOutlined />}
+                title="Welcome to the Home Page"
+            />
+        </div>
+    )
 }
+export default HomePage;

@@ -1,41 +1,80 @@
-import { useState, useContext } from "react";
-import { AuthContext } from "../components/context/AuthContext";
-import request from "../util/request";
-import { Button, Input, Card } from "antd";
-import { useNavigate } from "react-router-dom";
+import React, { useContext } from "react";
+import { Col, Row, Form, Input, Button, notification, Divider } from 'antd';
+import { loginApi } from '../util/api';
+import { Link, useNavigate } from 'react-router-dom';
+import { ArrowLeftOutlined } from '@ant-design/icons';
+import { AuthContext } from "../components/context/authContext";
 
-export default function Login() {
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
-    const { login } = useContext(AuthContext);
+const LoginPage = () => {
     const navigate = useNavigate();
+    const { setAuth } = useContext(AuthContext);
 
-    const handleLogin = async () => {
+    const onFinish = async (values) => {
+        const { email, password } = values;
         try {
-            let res = await request.post("/login", { email, password });
-            if (res.data.EC === 0) {
-                login(res.data.DT.token);
-                navigate("/");
+            const res = await loginApi({ email, password });
+            if (res && res.EC === 0) {
+                localStorage.setItem('access_token', res.access_token);
+                notification.success({ message: 'LOGIN', description: "Success" });
+                setAuth({
+                    isAuthenticated: true,
+                    user: { email: res.user?.email ?? "", name: res.user?.name ?? "" }
+                });
+                navigate('/');
             } else {
-                alert(res.data.EM);
+                notification.error({ message: 'LOGIN', description: res?.EM || 'Login failed' });
             }
-        } catch (err) {
-            alert("Login failed");
+        } catch (error) {
+            notification.error({ message: 'LOGIN', description: 'Server error' });
         }
     };
 
     return (
-        <Card title="Login" style={{ width: 400, margin: "50px auto" }}>
-            <Input placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
-            <Input.Password
-                placeholder="Password"
-                style={{ marginTop: 10 }}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-            />
-            <Button type="primary" block style={{ marginTop: 15 }} onClick={handleLogin}>
-                Login
-            </Button>
-        </Card>
+        <Row justify="center" style={{ marginTop: "30px" }}>
+            <Col xs={24} md={16} lg={8}>
+                <fieldset style={{ padding: "15px", margin: "5px", border: "1px solid #ccc", borderRadius: "5px" }}>
+                    <legend>Đăng nhập</legend>
+                    <Form
+                        name="login"
+                        onFinish={onFinish}
+                        autoComplete="off"
+                        layout="vertical"
+                    >
+                        <Form.Item
+                            label="Email"
+                            name="email"
+                            rules={[
+                                { required: true, message: 'Please input your email!' },
+                                { type: 'email', message: 'Invalid email format!' }
+                            ]}
+                        >
+                            <Input />
+                        </Form.Item>
+
+                        <Form.Item
+                            label="Password"
+                            name="password"
+                            rules={[
+                                { required: true, message: 'Please input your password!' },
+                                { min: 6, message: 'Password must be at least 6 characters!' }
+                            ]}
+                        >
+                            <Input.Password />
+                        </Form.Item>
+
+                        <Form.Item>
+                            <Button type="primary" htmlType="submit">Đăng nhập</Button>
+                        </Form.Item>
+                    </Form>
+                    <Link to="/" ><ArrowLeftOutlined /> Go to Home Page</Link>
+                    <Divider />
+                    <div style={{ textAlign: "center" }}>
+                        Chưa có tài khoản? <Link to="/register">Đăng ký</Link>
+                    </div>
+                </fieldset>
+            </Col>
+        </Row>
     );
-}
+};
+
+export default LoginPage;

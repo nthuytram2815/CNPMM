@@ -1,25 +1,57 @@
-import { useContext } from "react";
-import { AuthContext } from "../context/AuthContext";
-import { Link, useNavigate } from "react-router-dom";
-import { Button } from "antd";
+import React, { useContext, useState } from 'react';
+import {UsergroupAddOutlined, HomeOutlined, SettingOutlined} from '@ant-design/icons';
+import { Link, useNavigate } from 'react-router-dom';
+import { Menu } from 'antd';
+import { AuthContext } from '../context/auth.context';
 
-export default function Header() {
-    const { logout, token } = useContext(AuthContext);
+const Header = () => {
     const navigate = useNavigate();
-
+    const {auth, setAuth} = useContext(AuthContext);
+    const items = [
+        {
+            label: <Link to="/">Home</Link>,
+            key: "home",
+            icon: <HomeOutlined />,
+        },
+        ...AuthContext(auth.isAuthenticated ? [{
+            label: <Link to="/user">Users</Link>,
+            key: "user",
+            icon: <UsergroupAddOutlined />,
+        }] : []),
+        {
+            label:`Welcome, ${auth?.user?.email ?? ""}`,
+            key: "SubMenu",
+            icon: <SettingOutlined />,
+            children: [
+                ...(auth.isAuthenticated ? [{
+                    label: <span onClick={() => {
+                        localStorage.clear("access_token");
+                        setCurrent("home");
+                        setAuth({
+                            isAuthenticated: false,
+                            user: {
+                                email: "",
+                                name: ""
+                            }
+                        })
+                        navigate("/");
+                    }
+                }>Đăng xuất</span>,
+                    key: "logout",
+                }] : [{
+                    label: <Link to="/login">Đăng nhập</Link>,
+                    key: "login",
+                    }
+                ]),
+            ],
+        },
+    ];
+    const [current, setCurrent] = useState("mail");
+    const onClick = (e) => {
+        setCurrent(e.key);
+    };
     return (
-        <header style={{ padding: 20, background: "#eee", marginBottom: 20 }}>
-            <Link to="/">Home</Link> | <Link to="/dashboard">Dashboard</Link>
-
-            {token ? (
-                <Button danger style={{ marginLeft: 10 }} onClick={() => { logout(); navigate("/login"); }}>
-                    Logout
-                </Button>
-            ) : (
-                <Link to="/login">
-                    <Button type="primary" style={{ marginLeft: 10 }}>Login</Button>
-                </Link>
-            )}
-        </header>
+        <Menu onClick={onClick} selectedKeys={[current]} mode="horizontal" items={items} />
     );
-}
+};
+export default Header;
